@@ -16,19 +16,60 @@ const client = new MongoClient(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
-console.log(uri);
 
 async function run() {
   try {
     await client.connect();
     const database = client.db("babyToys");
     const reviewCollection = database.collection("Review");
+    const usersCollection = database.collection("users");
+    const productsCollection = database.collection("products");
 
     app.post("/review", async (req, res) => {
       const review = req.body;
       console.log("hitting tha post", review);
       const result = await reviewCollection.insertOne(review);
       console.log(result);
+      res.json(result);
+    });
+    app.post("/users", async (req, res) => {
+      const review = req.body;
+      const result = await usersCollection.insertOne(review);
+      res.json(result);
+    });
+    app.post("/addproduct", async (req, res) => {
+      const product = req.body;
+      const result = await productsCollection.insertOne(product);
+      res.json(result);
+    });
+    app.put("/users", async (req, res) => {
+      const user = req.body;
+      const filter = { email: user.email };
+      const options = { upsert: true };
+      const updateDoc = { $set: user };
+      const result = await usersCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
+      res.json(result);
+    });
+    app.get("/users/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const user = await usersCollection.findOne(query);
+      let isAdmin = false;
+      if (user?.role === "admin") {
+        isAdmin = true;
+      }
+      res.json({ admin: isAdmin });
+    });
+    app.put("/users/makeadmin", async (req, res) => {
+      const user = req.body;
+      const filter = { email: user.email };
+      const updateDoc = { $set: { role: "admin" } };
+      const result = await usersCollection.updateOne(filter, updateDoc);
+
       res.json(result);
     });
     app.get("/review", async (req, res) => {
