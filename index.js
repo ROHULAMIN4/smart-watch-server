@@ -54,7 +54,9 @@ async function run() {
       res.send(product);
     });
     app.get("/salesrequiest", async (req, res) => {
-      const cursor = salesRequiestCollection.find({});
+      const email = req.query.email;
+      const query = { email: email };
+      const cursor = salesRequiestCollection.find(query);
       const product = await cursor.toArray();
       res.send(product);
     });
