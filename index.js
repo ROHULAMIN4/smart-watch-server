@@ -24,6 +24,7 @@ async function run() {
     const reviewCollection = database.collection("Review");
     const usersCollection = database.collection("users");
     const productsCollection = database.collection("products");
+    const salesRequiestCollection = database.collection("salesRequiest");
 
     app.post("/review", async (req, res) => {
       const review = req.body;
@@ -37,10 +38,25 @@ async function run() {
       const result = await usersCollection.insertOne(review);
       res.json(result);
     });
+    app.post("/salesrequiest", async (req, res) => {
+      const review = req.body;
+      const result = await salesRequiestCollection.insertOne(review);
+      res.json(result);
+    });
     app.post("/addproduct", async (req, res) => {
       const product = req.body;
       const result = await productsCollection.insertOne(product);
       res.json(result);
+    });
+    app.get("/addproduct", async (req, res) => {
+      const cursor = productsCollection.find({});
+      const product = await cursor.toArray();
+      res.send(product);
+    });
+    app.get("/salesrequiest", async (req, res) => {
+      const cursor = salesRequiestCollection.find({});
+      const product = await cursor.toArray();
+      res.send(product);
     });
     app.put("/users", async (req, res) => {
       const user = req.body;
