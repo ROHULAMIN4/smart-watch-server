@@ -1,5 +1,7 @@
 const express = require("express");
 const { MongoClient } = require("mongodb");
+const fileUpload = require("express-fileupload");
+
 require("dotenv").config();
 const dotenv = require("dotenv");
 const ObjectId = require("mongodb").ObjectId;
@@ -10,6 +12,7 @@ const port = process.env.PORT || 5000;
 // manere
 app.use(cors());
 app.use(express.json());
+app.use(fileUpload());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.4vnd1.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, {
@@ -25,6 +28,7 @@ async function run() {
     const usersCollection = database.collection("users");
     const productsCollection = database.collection("products");
     const salesRequiestCollection = database.collection("salesRequiest");
+    const bestSellesCollection = database.collection("bestSelles");
 
     app.post("/review", async (req, res) => {
       const review = req.body;
@@ -38,6 +42,31 @@ async function run() {
       const result = await usersCollection.insertOne(review);
       res.json(result);
     });
+    // best selles
+    app.post("/bestSelles", async (req, res) => {
+      const name = req.body.name;
+      const price = req.body.price;
+      const desc = req.body.descript;
+      const pic = req.files.images;
+      const picdata = pic.data;
+      const encodeImg = picdata.toString("base64");
+      const imgBuffer = Buffer.from(encodeImg, "base64");
+      const selles = {
+        name,
+        price,
+        desc,
+        image: imgBuffer,
+      };
+      const result = await bestSellesCollection.insertOne(selles);
+      res.json(result);
+    });
+    // get api from bestSelles
+    app.get("/bestSelles", async (req, res) => {
+      const cursur = bestSellesCollection.find({});
+      const product = await cursur.toArray();
+      res.send(product);
+    });
+    // selles require
     app.post("/salesrequiest", async (req, res) => {
       const review = req.body;
       const result = await salesRequiestCollection.insertOne(review);
